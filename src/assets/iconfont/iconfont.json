@@ -1,0 +1,121 @@
+{
+  "id": "1673314",
+  "name": "repastSystem",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "1351",
+      "name": "向下",
+      "font_class": "xiangxia",
+      "unicode": "e601",
+      "unicode_decimal": 58881
+    },
+    {
+      "icon_id": "1353",
+      "name": "向左",
+      "font_class": "xiangzuo",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "579898",
+      "name": "赠送",
+      "font_class": "zengsong",
+      "unicode": "e78c",
+      "unicode_decimal": 59276
+    },
+    {
+      "icon_id": "992445",
+      "name": "搜索",
+      "font_class": "sousuo",
+      "unicode": "e647",
+      "unicode_decimal": 58951
+    },
+    {
+      "icon_id": "1132476",
+      "name": "添加备注",
+      "font_class": "tianjiabeizhu",
+      "unicode": "e639",
+      "unicode_decimal": 58937
+    },
+    {
+      "icon_id": "1380045",
+      "name": "外卖",
+      "font_class": "icon-test",
+      "unicode": "e622",
+      "unicode_decimal": 58914
+    },
+    {
+      "icon_id": "1703546",
+      "name": "减少",
+      "font_class": "jianshao",
+      "unicode": "e64c",
+      "unicode_decimal": 58956
+    },
+    {
+      "icon_id": "4867099",
+      "name": "退出",
+      "font_class": "tuichu",
+      "unicode": "e658",
+      "unicode_decimal": 58968
+    },
+    {
+      "icon_id": "6049798",
+      "name": "下拉实心",
+      "font_class": "xialashixin",
+      "unicode": "e623",
+      "unicode_decimal": 58915
+    },
+    {
+      "icon_id": "6884483",
+      "name": "向右",
+      "font_class": "xiangyou",
+      "unicode": "e626",
+      "unicode_decimal": 58918
+    },
+    {
+      "icon_id": "7720064",
+      "name": "关闭",
+      "font_class": "guanbi",
+      "unicode": "e60f",
+      "unicode_decimal": 58895
+    },
+    {
+      "icon_id": "9297205",
+      "name": "外卖",
+      "font_class": "waimai",
+      "unicode": "e61b",
+      "unicode_decimal": 58907
+    },
+    {
+      "icon_id": "10194310",
+      "name": "管理",
+      "font_class": "guanli",
+      "unicode": "e65b",
+      "unicode_decimal": 58971
+    },
+    {
+      "icon_id": "10902058",
+      "name": "转换视图",
+      "font_class": "view",
+      "unicode": "e607",
+      "unicode_decimal": 58887
+    },
+    {
+      "icon_id": "11372735",
+      "name": "增加",
+      "font_class": "zengjia",
+      "unicode": "e8c0",
+      "unicode_decimal": 59584
+    },
+    {
+      "icon_id": "11519640",
+      "name": "删除",
+      "font_class": "shanchu",
+      "unicode": "e742",
+      "unicode_decimal": 59202
+    }
+  ]
+}
