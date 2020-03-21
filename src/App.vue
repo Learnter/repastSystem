@@ -30,6 +30,6 @@ body {
 }
 
 /* chrome 浏览器隐藏滚动条 */
-*::-webkit-scrollbar { 
-  display:none}
+/* *::-webkit-scrollbar { 
+  display:none} */
 </style>

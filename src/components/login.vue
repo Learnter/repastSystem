@@ -7,23 +7,23 @@
     <div id="loginBox">
       <p class="systemName">欢迎登陆</p>
       <el-form :model="loginForm" :rules="loginRules" ref="loginForm" label-width="0px">
-        <el-form-item label prop="userName" style="margin-top:40px;">
+        <el-form-item label prop="account" style="margin-top:40px;">
           <el-row>
             <el-col :span="2">
               <span class="iconfont icon-denglu"></span>
             </el-col>
             <el-col :span="22">
-              <el-input class="inps" placeholder="用户名" v-model="loginForm.userName"></el-input>
+              <el-input class="inps" placeholder="用户名" v-model="loginForm.account" clearable></el-input>
             </el-col>
           </el-row>
         </el-form-item>
-        <el-form-item label prop="passWord">
+        <el-form-item label prop="password">
           <el-row>
             <el-col :span="2">
              <span class="iconfont icon-mima"></span>
             </el-col>
             <el-col :span="22">
-              <el-input class="inps" placeholder="密码" v-model="loginForm.passWord"></el-input>
+              <el-input class="inps" placeholder="密码" v-model="loginForm.password" show-password clearable></el-input>
             </el-col>
           </el-row>
         </el-form-item>
@@ -63,7 +63,6 @@ export default {
           this.shadowColor = "";
           this.direction = "";
         }
-
         draw(context) {
           context.save();
           context.translate(this.x, this.y);
@@ -88,20 +87,40 @@ export default {
       width: window.innerWidth,
       height: window.innerHeight,
       loginForm: {
-        userName: "",
-        passWord: ""
+        account: "",
+        password: ""
       },
       loginRules: {
-        userName: [
+        account: [
           { required: true, message: "请输入用户名", trigger: "blur" }
         ],
-        passWord: [{ required: true, message: "请输入密码", trigger: "blur" }]
+        password: [{ required: true, message: "请输入密码", trigger: "blur" }]
       }
     };
   },
   methods: {
     //提交登录
-    submitForm() {},
+    submitForm() {
+      let {account,password} = this.loginForm;
+      if(!account || !password) return;
+      var loadingIcon  =  this.$loading.service({
+          lock: true,
+          text: 'Loading',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0,0,0,0.3)'
+        });
+      this.$https.post(this.$api.login,this.loginForm).then(res => {
+         setTimeout(() => {
+           loadingIcon.close();
+         },500)
+         if(res.code == 200){
+            let {token,userInfo,equipments} = res.data;
+            localStorage.setItem('TOKEN',token);
+            localStorage.setItem('USER_INFO',JSON.stringify(userInfo));
+            this.$router.replace("/index");
+         }
+      })
+    },
     //重复动画
     drawFrame() {
       let animation = requestAnimationFrame(this.drawFrame);
@@ -195,15 +214,13 @@ export default {
 </script>
  
  <style  scoped>
+
 #login {
-  width: 100vw;
   padding: 0;
   margin: 0;
-  height: 100vh;
   font-size: 16px;
   background-repeat: no-repeat;
   background-position: left top;
-  background-color: #242645;
   color: #fff;
   font-family: "Source Sans Pro";
   background-size: 100% 100%;
@@ -211,7 +228,7 @@ export default {
   position: relative;
 }  
  #bgd {
-    height: 100vh;
+    height: 100vh; 
     width: 100vw;
     overflow: hidden;
   }
@@ -224,6 +241,7 @@ export default {
  #loginBox {
     width: 16%;
     height: 38%;
+    /* min-width:250px; */
     position: absolute;
     top: 0;
     left: 0;
@@ -240,6 +258,7 @@ export default {
     );
     border-radius:10px;
   }
+
  /deep/.inps input {
       border: none;
       color: #fff;

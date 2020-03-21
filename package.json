@@ -1,15 +1,19 @@
 {
-  "name": "repast_system",
+  "name": "repastsystem",
   "version": "1.0.0",
   "description": "A Vue.js project",
   "author": "黄椿任 <17818556509@163.com>",
   "private": true,
+  "main":"./build/electron.js",
   "scripts": {
     "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
     "start": "npm run dev",
-    "build": "node build/build.js"
+    "build": "node build/build.js",
+    "electron_dev": "npm run build && electron build/electron.js",
+    "electron_build": "electron-packager ./dist/ --platform=win32 --arch=ia32  --icon=./src/assets/favicon.ico --overwrite"
   },
   "dependencies": {
+    "axios": "^0.19.2",
     "element-ui": "^2.13.0",
     "vue": "^2.5.2",
     "vue-router": "^3.0.1"
@@ -29,6 +33,8 @@
     "chalk": "^2.0.1",
     "copy-webpack-plugin": "^4.0.1",
     "css-loader": "^0.28.0",
+    "electron": "^8.1.1",
+    "electron-packager": "^14.2.1",
     "extract-text-webpack-plugin": "^3.0.0",
     "file-loader": "^1.1.4",
     "friendly-errors-webpack-plugin": "^1.6.1",
