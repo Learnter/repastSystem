@@ -113,7 +113,7 @@ export default {
          setTimeout(() => {
            loadingIcon.close();
          },500)
-         if(res.code == 200){
+         if(res && res.code == 200){
             let {token,userInfo,equipments} = res.data;
             localStorage.setItem('TOKEN',token);
             localStorage.setItem('USER_INFO',JSON.stringify(userInfo));

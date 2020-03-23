@@ -1,6 +1,7 @@
 
 import axios from 'axios';
 import router from "vue-router";
+import {Message} from "element-ui";
 
 axios.interceptors.request.use(config => { //请求拦截器
   return config
@@ -19,9 +20,9 @@ function checkStatus (response) { //检验http请求状态码 // 如果http状�
     return response.data;
     // 如果不需要除了data之外的数据，可以直接 return response.data
   }else if(response.status === 404){
-     alert("网络错误");
+     Message.error({message:'网络错误'});
   }else if(response.status === 500){
-     alert("服务器错误");
+     Message.error({message:'服务器错误'});
   }
   // 异常状态下，把错误信息返回去
 }
@@ -30,7 +31,7 @@ function checkCode (res) { //检测后端抛出的错误 // 如果code异常(这
   if(res.code === 200){
     return res;
   }else{
-    alert(res.msg);
+    Message.error({message:res.msg});
   }
 }
 
@@ -52,7 +53,7 @@ export default {
     }).then((response) => {
         return checkStatus(response)
     }).then((res) => {
-        return checkCode(res)
+      return checkCode(res);
     })
   },
   get (url,params) {

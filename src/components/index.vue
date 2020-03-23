@@ -9,10 +9,10 @@
             <i class="iconfont icon-touxiang"></i>
             <span>{{userInfo.username}}</span>
           </div>
-           <el-select v-model="deviceNum" placeholder="请选择收款设备" size="mini" @change="selectDevice">
+           <!-- <el-select v-model="deviceNum" placeholder="请选择收款设备" size="mini" @change="selectDevice">
             <el-option v-for="item in userInfo.equipments" :key="item.value" :label="item.label" :value="item.value">
             </el-option>
-          </el-select>
+          </el-select> -->
         </div>
       </div>
       <div class="nav_right">
@@ -86,7 +86,7 @@
           </div>
           <div class="left_bottom_btn">
             <el-button type="danger" @click="orderRemarks">全单备注</el-button>
-            <el-button type="primary"  @click="submitConfirm" :loading="payling">结账</el-button>
+            <el-button type="primary"  @click="showPayMask" >结账</el-button>
           </div>
         </div>
       </div>
@@ -157,7 +157,7 @@
             </div>
           </div>  
             
-          <div class="right_nav_item"  :class="{lightNav:submitConfig.take_out === 2}"  @click="takeOut">
+          <div class="right_nav_item"  :class="{lightNav:isTakeOut === 2}"  @click="takeOut">
             <div class="right_nav_item_inner">
               <i class="iconfont icon-waimai" style="font-size:25px;margin-bottom:5px"></i>
               <span>外卖</span>
@@ -225,11 +225,11 @@
       </span>
     </el-dialog>
 
-    <el-dialog title="全单备注" :visible.sync="orderNote" width="30%" center  :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false">
-       <el-input type="textarea" placeholder="请输入订单备注信息" v-model="submitConfig.note"  maxlength="50" show-word-limit></el-input>
+    <el-dialog title="全单备注" :visible.sync="orderNoteInput" width="30%" center  :show-close="false" :close-on-click-modal="false" :close-on-press-escape="false">
+       <el-input type="textarea" placeholder="请输入订单备注信息" v-model="orderNote"  maxlength="50" show-word-limit></el-input>
       <span slot="footer" class="dialog-footer">
         <el-button @click="cancelOrderNote">取 消</el-button>
-        <el-button type="primary" @click="orderNote = false">确 定</el-button>
+        <el-button type="primary" @click="orderNoteInput = false">确 定</el-button>
       </span>
     </el-dialog>
 
@@ -257,65 +257,66 @@
     </el-dialog>
 
     <div class="maskLayer" v-if="drawer">
-      <div class="mask_layer_content">
-        <div class="mask_layer_content_top">
-          <div class="m_l_c_top_Btn" :class="{'pay_method_light':payMethod === item.type}" v-for="(item,index) in paymentTerm" :key="index" @click="payMethodTap(item.type)">
-            {{item.name}}
-            <img v-if="payMethod === item.type" src="../assets/img/corner.png"/>
+        <div class="mask_layer_content">
+          <div class="mask_layer_content_top">
+            <div class="m_l_c_top_Btn" :class="{'pay_method_light':payMethod === item.type}" v-for="(item,index) in paymentTerm" :key="index" @click="payMethodTap(item.type,item.value)">
+              {{item.name}}
+              <img v-if="payMethod === item.type" src="../assets/img/corner.png"/>
+            </div>
           </div>
-        </div>
-        <div class="mask_layer_content_middle">
-          <div class="mask_layer_content_middle_item">
-            <span class="m_l_c_m_title">本次支付</span>
-            <el-input size="small" placeholder="请使用扫码器进行扫描"  :value="`￥${totalMoney}`"  disabled  class="autoInput input_red_color"></el-input>
+          <div class="mask_layer_content_middle">
+            <div class="mask_layer_content_middle_item">
+              <span class="m_l_c_m_title">本次支付</span>
+              <el-input size="small" placeholder="请使用扫码器进行扫描"  :value="`￥${payAmount}`"  disabled  class="autoInput input_red_color"></el-input>
+            </div>
+            <div class="mask_layer_content_middle_item">
+              <span class="m_l_c_m_title">优惠金额</span>
+              <el-input size="small" placeholder="0.00"  v-model="disAmount" ref="inputMoney"  clearable class="autoInput">
+                <i slot="prefix" class="el-input__icon">￥</i>
+              </el-input>
+            <el-button type="primary" size="small" style="width:100px;font-size:14px" @click="disAmountBtn">确 认</el-button>
+            </div>
+            <div class="mask_layer_content_middle_item">
+              <span class="m_l_c_m_title">请扫描</span>
+              <el-input size="small" placeholder="请使用扫码器进行扫描" ref="autofocus"  v-model="searchCode" clearable  class="autoInput"></el-input>
+            </div>
           </div>
-          <div class="mask_layer_content_middle_item">
-            <span class="m_l_c_m_title">优惠金额</span>
-            <el-input size="small" placeholder="0.00"  v-model="disAmount" ref="inputMoney"  clearable class="autoInput">
-              <i slot="prefix" class="el-input__icon">￥</i>
-            </el-input>
-           <el-button type="primary" size="small" style="width:100px;font-size:14px" @click="disAmountBtn">确 认</el-button>
+          <table>
+              <tr>
+                <td @click="inputMoneyBtn(7)">7</td>
+                <td @click="inputMoneyBtn(8)">8</td>
+                <td @click="inputMoneyBtn(9)">9</td>
+                <td @click="inputMoneyBtn(10)">10</td>
+                <td class="td_blue_bgcolor">打印结账单</td>
+                <td class="td_blue_bgcolor">需开发票</td>
+              </tr>
+              <tr>
+                <td @click="inputMoneyBtn(4)">4</td>
+                <td @click="inputMoneyBtn(5)">5</td>
+                <td @click="inputMoneyBtn(6)">6</td>
+                <td @click="inputMoneyBtn(20)">20</td>
+                <td colspan="2" @click="cancelDrawer">返回</td>
+              </tr>
+              <tr>
+                <td @click="inputMoneyBtn(1)">1</td>
+                <td @click="inputMoneyBtn(2)">2</td>
+                <td @click="inputMoneyBtn(3)">3</td>
+                <td @click="inputMoneyBtn(50)">50</td>
+                <td style="vertical-align: middle;" colspan="2" rowspan="2">
+                <el-button type="danger" style="width:100%;height:100%;font-size:20px" @click="confirmPay" :loading="payling">结 账</el-button>
+                </td>
+              </tr>
+              <tr>
+                <td  @click="inputMoneyBtn(0)">0</td>
+                <td  @click="inputMoneyBtn('00')">00</td>
+                <td  @click="inputMoneyBtn('.')">.</td>
+                <td  @click="inputMoneyBtn(100)">100</td>
+              </tr>
+            </table>
           </div>
-           <div class="mask_layer_content_middle_item">
-            <span class="m_l_c_m_title">请扫描</span>
-            <el-input size="small" placeholder="请使用扫码器进行扫描" ref="autofocus"  v-model="searchCode" clearable  class="autoInput"></el-input>
-          </div>
-        </div>
-        <table>
-            <tr>
-              <td @click="inputMoneyBtn('7')">7</td>
-              <td @click="inputMoneyBtn('8')">8</td>
-              <td @click="inputMoneyBtn('9')">9</td>
-              <td @click="inputMoneyBtn(10)">10</td>
-              <td class="td_blue_bgcolor">打印结账单</td>
-              <td class="td_blue_bgcolor">需开发票</td>
-            </tr>
-            <tr>
-              <td @click="inputMoneyBtn('4')">4</td>
-              <td @click="inputMoneyBtn('5')">5</td>
-              <td @click="inputMoneyBtn('6')">6</td>
-              <td @click="inputMoneyBtn(20)">20</td>
-              <td colspan="2" @click="drawer=false">返回</td>
-            </tr>
-            <tr>
-              <td @click="inputMoneyBtn('1')">1</td>
-              <td @click="inputMoneyBtn('2')">2</td>
-              <td @click="inputMoneyBtn('3')">3</td>
-              <td @click="inputMoneyBtn(50)">50</td>
-              <td style="vertical-align: middle;" colspan="2" rowspan="2"  class="td_red_bgcolor">结 账</td>
-            </tr>
-            <tr>
-              <td  @click="inputMoneyBtn('0')">0</td>
-              <td  @click="inputMoneyBtn('00')">00</td>
-              <td  @click="inputMoneyBtn('.')">.</td>
-              <td  @click="inputMoneyBtn(100)">100</td>
-            </tr>
-          </table>
-        </div>
-      </div>
-     
-    </div>
-  </div>
+        </div> 
+      </div> 
+  </div> 
 </template>
 
 <script>
@@ -323,10 +324,13 @@ let timer;
 export default {
   data() {
     return {
+      payling:false,//是否正在支付
       payMethod:'xianjin',//收款方式
       disAmount:'', //优惠金额
+      payAmount:0,//需要支付金额
       searchCode:'',//扫码的序列号
       drawer:false, //显示遮罩层
+      isTakeOut:1, //是否外带 1为堂食  2为外带
       memberInfo:{ //会员信息
         user_id:'', //会员id
         nickname:'', //会员名称
@@ -336,14 +340,14 @@ export default {
       },
       isGoodsUp:false,//是否挂单
       cancelGoodUp:null,//取消挂单索引
-      payling:false, //是否正在结账
       deviceNum:"",//收款设备SN
       userInfo:null, //用户信息
       isPresent:false,//是否赠送商品
       singleNoteInput: false, //单条备注输入框
       isHasSingleNote: false, //是否有单条备注
-      orderNote:false, //所有备注
       textarea: "", //单商品备注信息
+      orderNoteInput:false, //订单备注输入框
+      orderNote:'',//订单备注信息
       checkboxArr: [], //复选框数组
       lightNavType: null, //高亮导航类型
       currentMenu: null, //当前菜单
@@ -362,10 +366,13 @@ export default {
       page_num:10
       },
       submitConfig:{ //订单提交请求
-        sn:'',
-        note:'',
+        sn:'', //设备的sn
+        note:'', //全单备注
         take_out:1, //1表示堂食,2表示外带
-        goodslist:[]
+        concessional:"0",//优惠金额
+        type:"5",//1：支付宝刷脸 ，4：微信刷脸,5：现金支付，6：支付宝，7：微信，//8：扫码枪
+        bar_code:'',//扫码枪的条形码
+        goodslist:[] //订单商品列表
       },
       foodList: [],//菜单列表
       foodsCatchArray:[],//菜单缓存列表
@@ -373,12 +380,12 @@ export default {
       goodsUpArr: [],//挂单数组
       webSocket:null,//soket通信
       paymentTerm:[ //收款方式数组
-        {type:"xianjin",name:'现金'},
-        {type:"weChat",name:'微信'},
-        {type:"alipay",name:'支付宝'},
-        {type:'codeScanner',name:'扫码枪'},
-        {type:"weChatFace",name:'微信刷脸'},
-        {type:"alipayFace",name:'支付宝刷脸'},
+        {type:"xianjin",name:'现金',value:5},
+        {type:"weChat",name:'微信',value:7},
+        {type:"alipay",name:'支付宝',value:6},
+        {type:'codeScanner',name:'扫码枪',value:8},
+        {type:"weChatFace",name:'微信刷脸',value:4},
+        {type:"alipayFace",name:'支付宝刷脸',value:1},
       ]
     };
   },
@@ -389,27 +396,83 @@ export default {
     this.sumMoney();
   },
   methods: {
+    clearOrderInfo(){ //清空订单信息
+      this.disAmount = '';
+      this.searchCode = '';
+      this.payMethod = 'xianjin',
+      this.isTakeOut = 1;
+      this.chooseFoods.splice(0);
+      this.isPresent = false;
+      this.isHasSingleNote = false;
+      this.lightNavType = null;
+      this.orderNote = '';
+      this.deviceNum = '';
+      this.drawer = false;
+      this.sumMoney();
+    },
+    cancelDrawer(){ //取消支付返回
+      this.deviceNum = '';
+      this.disAmount = '';
+      this.searchCode = '';
+      this.payMethod = 'xianjin',
+      this.drawer = false;
+    },
+    confirmPay(){ //确认支付结账
+      this.submitConfig.concessional = this.disAmount; //商品优惠金额
+      this.submitConfig.goodslist = this.chooseFoods; //商品订单列表
+      this.submitConfig.take_out = this.isTakeOut; //是否为外带
+      this.submitConfig.note = this.orderNote; //订单备注
+      if(this.submitConfig.type === 8){
+         this.submitConfig.bar_code = this.searchCode; //扫码条形码
+      }
+      this.payling = true;
+      this.$https.post(this.$api.submitConfirm,this.submitConfig).then(res => {
+        if( res && res.code == 200){
+           if(res.data.payType === 1){
+            this.$note.success({message:"结账成功!",center:true});
+            setTimeout(()=>{
+              this.clearOrderInfo();
+              this.payling = false;
+            },800)
+           }else if(res.data.payType === 3){
+             this.toEquipment(res.data.order_sn);
+           }
+        }
+      }) 
+    },
     inputMoneyBtn(value){ //输入优惠金额
-      if(typeof value == Number){
-        this.disAmount = (this.disAmount*1 + value*1);
+      var reg = /^(10|20|50|100)/i;
+      if(reg.test(value)){
+        this.disAmount = value;
       }else{
-        this.disAmount = (this.disAmount + value);
+        this.disAmount += value.toString();
       }
     },
-    payMethodTap(type){ //切换支付方式
+    payMethodTap(type,value){ //切换支付方式
       if(type === 'codeScanner'){
         this.$refs['autofocus'].focus();
+      }else if(type === 'alipayFace'){
+        let alipay = this.userInfo.alipayEquipments;
+        if(alipay[0]){
+          this.deviceNum = alipay[0].value;
+        }
+      }else if(type === 'weChatFace'){
+        let wechat = this.userInfo.wechatEquipments;
+        if(wechat[0]){
+          this.deviceNum = wechat[0].value;
+        }
       }
       this.payMethod = type;
+      this.submitConfig.type = value;
     },
     disAmountBtn(){ //点击优惠按钮
-      if(!this.disAmount) return;
-      this.totalMoney = (this.totalMoney - this.disAmount);
+      if(!this.disAmount || (this.disAmount > this.payAmount)) return this.disAmount = '';
+      this.payAmount = (this.payAmount - this.disAmount).toFixed(2);
     },
     searchUserInfo(){ //搜索会员的余额及积分
       if(!this.memberInfo.card_num) return;
       this.$https.post(this.$api.userInfo,this.memberInfo).then((res)=>{
-        if(res.code === 200){
+        if( res && res.code === 200){
           this.memberInfo = res.data;
         }
       })
@@ -423,11 +486,12 @@ export default {
       this.deviceNum = this.submitConfig.sn = value;
     },
     cancelOrderNote(){ //取消全单备注
-      this.orderNote = false;
-      this.submitConfig.note = '';
+      this.orderNoteInput = false;
+      this.orderNote = '';
     },
      remarks(type) {//调用菜品备注输入框
-      if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需添加备注的商品",center:true});
+      if (this.checkboxArr.length == 0)return;
+      //  this.$note.warning({message:"请勾选需添加备注的商品",center:true})
       this.singleNoteInput = true;
     },
     cancelSingleNote(){ //取消单商品备注
@@ -444,13 +508,13 @@ export default {
             }
          })
       })
-      // this.sumMoney();
       this.isHasSingleNote = true;
       this.singleNoteInput = false;
       this.textarea = "";
     },
      sNoteRemove(){ //删除单商品备注
-     if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需移除备注的商品",center:true});
+     if (this.checkboxArr.length == 0)return ;
+    //  this.$note.warning({message:"请勾选需移除备注的商品",center:true})
         this.chooseFoods.forEach((item)=>{
           this.checkboxArr.forEach((num,index)=>{
             if(item.goods_id == num){
@@ -476,11 +540,9 @@ export default {
     },
     searchFoods(){ //搜索商品
       this.$https.post(this.$api.searchFood,this.searchKeyConfig).then(res => {
-        if(res.code == 200){
+        if(res && res.code == 200){
           if(res.data.length){
             this.foodList = res.data;
-          }else{
-            this.$note.warning({message:"搜索不到相关商品!",center:true})
           }
         }
       })
@@ -500,7 +562,7 @@ export default {
     },
     category(){ //商品分类
         this.$https.post(this.$api.category).then(res => {
-        if(res.code == 200){
+        if(res && res.code == 200){
           this.menuNav =  res.data;
           if(res.data.length > 0){
             res.data.map((item,index) => { //创建菜单缓存数组
@@ -525,8 +587,8 @@ export default {
        let currentFood = this.foodsCatchArray[this.currentMenu];
        if(currentFood.list.length == 0){
             this.$https.post(this.$api.goods,currentFood.requestConfig).then(res => {
-              if(res.code == 200){
-              this.foodList = currentFood.list = res.data;
+              if(res && res.code == 200){
+                this.foodList = currentFood.list = res.data;
                 if(res.data.length < 10){ //首次就已经加载完后台数据
                   currentFood.isFinish = true;
                 }
@@ -553,7 +615,7 @@ export default {
           setTimeout(() => {
                 loadingIcon.close();
           },500);
-          if(res.code == 200){
+          if(res && res.code == 200){
             this.foodList = currentFood.list = currentFood.list.concat(res.data);
             if(res.data.length < 10){
                currentFood.isFinish = true;
@@ -598,7 +660,8 @@ export default {
         this.sumMoney();
     },
     delFoods(type) {//删除已选菜品
-      if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需移除的商品",center:true});
+      if (this.checkboxArr.length == 0)return; 
+      // this.$note.warning({message:"请勾选需移除的商品",center:true});
         this.lightNavType = type;
         this.checkboxArr.forEach(num => {
           this.chooseFoods = this.chooseFoods.filter(item => {
@@ -612,7 +675,8 @@ export default {
         },800)
     },
     addNum(type) {//增加已选菜品数量
-      if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需增量的商品",center:true});
+      if (this.checkboxArr.length == 0)return;
+      //  this.$note.warning({message:"请勾选需增量的商品",center:true})
       clearTimeout(timer);
       timer = setTimeout(()=>{
         this.chooseFoods.forEach(item => {
@@ -627,7 +691,8 @@ export default {
       },500)
     },
     reduceNum(type) {//减少已选菜品数量
-      if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需减量的商品",center:true});
+      if (this.checkboxArr.length == 0)return;
+      //  this.$note.warning({message:"请勾选需减量的商品",center:true})
       clearTimeout(timer);
       timer = setTimeout(()=>{
           this.chooseFoods.forEach(item => {
@@ -642,11 +707,13 @@ export default {
       },500);
     },
     orderRemarks() { //订单备注信息
-      if (!this.chooseFoods.length)  return this.$note.error({message:"请添加商品!",center:true});
-      this.orderNote = true;
+      if (!this.chooseFoods.length)  return;
+      // this.$note.error({message:"请添加商品!",center:true})
+      this.orderNoteInput = true;
     },
     present(type){ //赠送
-      if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需赠送的商品",center:true});
+      if (this.checkboxArr.length == 0)return;
+      // this.$note.warning({message:"请勾选需赠送的商品",center:true})
       this.chooseFoods.forEach(item => {
         this.checkboxArr.forEach((num,index) => {
           if (item.goods_id == num) {
@@ -659,7 +726,8 @@ export default {
       this.sumMoney();
     },
     canclePresent(){ //取消赠送
-     if (this.checkboxArr.length == 0)return this.$note.warning({message:"请勾选需取消赠送的商品",center:true});
+     if (this.checkboxArr.length == 0)return ;
+     // this.$note.warning({message:"请勾选需取消赠送的商品",center:true})
       this.chooseFoods.forEach(item => {
         this.checkboxArr.forEach((num,index) => {
           if (item.goods_id === num) {
@@ -687,17 +755,10 @@ export default {
           this.$note({message:"取消退出",center:true});
         })
     },
-    submitConfirm(){  //提交订单
+    showPayMask(){  //显示结账遮罩框
+      if (!this.chooseFoods.length) return;
       this.drawer = true;
-      // if (!this.chooseFoods.length)  return this.$note.error({message:"请添加商品!",center:true});
-      // if (!this.deviceNum)  return this.$note.error({message:"请选择收款设备",center:true});
-      // this.submitConfig.goodslist = this.chooseFoods;
-      // this.payling = true;
-      // this.$https.post(this.$api.submitConfirm,this.submitConfig).then(res => {
-      //   if(res.code == 200){
-      //      this.toEquipment(res.data.order_sn,this.deviceNum);
-      //   }
-      // }) 
+      this.payAmount = this.totalMoney; 
     },
     putUp(){//挂单
       if(this.chooseFoods.length){
@@ -724,7 +785,6 @@ export default {
          if(!this.goodsUpArr.length) return;
          this.isGoodsUp = true;
        }
-      
     }, 
     cancelGoodUpBtn(){ //取消挂单
       this.chooseFoods = this.goodsUpArr[this.cancelGoodUp];
@@ -736,19 +796,16 @@ export default {
     },
     takeOut(){//外卖
       if(!this.chooseFoods.length) return;
-      this.submitConfig.take_out == 1 ? this.submitConfig.take_out = 2 : this.submitConfig.take_out = 1;
+      this.isTakeOut == 1 ? this.isTakeOut = 2 : this.isTakeOut = 1;
     },
     manage(){//管理
 
     },
-    toEquipment(orderNum,deviceNum){ //调起刷脸设备
-      let data = {order_sn:orderNum,sn:deviceNum,old_sn:`web${this.userInfo.id}`};
+    toEquipment(orderNum){ //调起刷脸设备
+      let data = {order_sn:orderNum,sn:this.deviceNum,old_sn:`web${this.userInfo.id}`};
        this.$https.post(this.$api.toEquipment,data).then(res => {
-        if(res.code == 200){ //调起刷脸设备后建立webSocket监听
+        if(res && res.code == 200){ //调起刷脸设备后建立webSocket监听
            this.initSocket();
-        }else{
-           this.$note.error({message:res.msg,center:true});
-           this.payling = false;
         }
       }) 
     },
@@ -771,27 +828,21 @@ export default {
        let serverMsg = JSON.parse(result.data);
       if(serverMsg.code == 1){
         this.$note.success({message:"用户支付成功",center:true});
-        this.payling = false;
         setTimeout(()=>{
-          sessionStorage.clear();
-          this.chooseFoods.length = 0;
-          this.submitConfig.note = '';
-          this.sumMoney();
-        },1000)
+          this.clearOrderInfo();
+        },800)
+        this.payling = false;
         this.webSocket.close(); //支付成功关闭webSocket监听
       }else if(serverMsg.code == -1){
-        this.payling = false;
         this.$message.confirm("是否清空列表?", "用户取消支付", {
           confirmButtonText: "确定",
           cancelButtonText: "取消",
           type: "warning",
           center: true
         }).then(res => {
-           sessionStorage.clear();
-          this.chooseFoods.length = 0;
-          this.submitConfig.note = '';
-          this.sumMoney();
+          this.clearOrderInfo();
         });
+         this.payling = false;
         this.webSocket.close(); //取消支付关闭webSocket监听
       }
     },
@@ -1406,6 +1457,7 @@ export default {
   overflow: hidden;
   display:flex;
   flex-direction: column;
+  min-width:890px;
 } 
 
 .mask_layer_content_top{
@@ -1479,7 +1531,7 @@ td{
   width:110px;
   height:50px;
   line-height:50px;
-  border-radius:2px;
+  border-radius:4px;
   background:#fff;
   font-size:18px;
   font-weight: bold;
@@ -1495,11 +1547,6 @@ td{
   color:#fff;
 }
 
-.td_red_bgcolor{
-  background:#D82737;
-  color:#fff;
-  font-size:20px;
-}
 
 
 </style>
