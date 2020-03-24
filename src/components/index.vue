@@ -82,7 +82,7 @@
           </div>
           <div class="left_bottom_noteClass">
             <span>全单备注：</span>
-            <span class="left_bottom_noteClass_text">{{submitConfig.note}}</span>
+            <span class="left_bottom_noteClass_text">{{orderNote}}</span>
           </div>
           <div class="left_bottom_btn">
             <el-button type="danger" @click="orderRemarks">全单备注</el-button>
@@ -259,9 +259,9 @@
     <div class="maskLayer" v-if="drawer">
         <div class="mask_layer_content">
           <div class="mask_layer_content_top">
-            <div class="m_l_c_top_Btn" :class="{'pay_method_light':payMethod === item.type}" v-for="(item,index) in paymentTerm" :key="index" @click="payMethodTap(item.type,item.value)">
+            <div class="m_l_c_top_Btn" :class="{'pay_method_light':payType == item.value}" v-for="(item,index) in paymentTerm" :key="index" @click="payMethodTap(item.value)">
               {{item.name}}
-              <img v-if="payMethod === item.type" src="../assets/img/corner.png"/>
+              <img v-if="payType == item.value" src="../assets/img/corner.png"/>
             </div>
           </div>
           <div class="mask_layer_content_middle">
@@ -324,8 +324,9 @@ let timer;
 export default {
   data() {
     return {
+      socketLimit:0,//socket重链次数
       payling:false,//是否正在支付
-      payMethod:'xianjin',//收款方式
+      payType:'5',//收款方式
       disAmount:'', //优惠金额
       payAmount:0,//需要支付金额
       searchCode:'',//扫码的序列号
@@ -399,14 +400,15 @@ export default {
     clearOrderInfo(){ //清空订单信息
       this.disAmount = '';
       this.searchCode = '';
-      this.payMethod = 'xianjin',
       this.isTakeOut = 1;
       this.chooseFoods.splice(0);
+      this.checkboxArr.splice(0);
       this.isPresent = false;
       this.isHasSingleNote = false;
       this.lightNavType = null;
       this.orderNote = '';
       this.deviceNum = '';
+      this.payType = "5";
       this.drawer = false;
       this.sumMoney();
     },
@@ -414,7 +416,8 @@ export default {
       this.deviceNum = '';
       this.disAmount = '';
       this.searchCode = '';
-      this.payMethod = 'xianjin',
+      this.payType = "5";
+      this.payling = false;
       this.drawer = false;
     },
     confirmPay(){ //确认支付结账
@@ -422,6 +425,7 @@ export default {
       this.submitConfig.goodslist = this.chooseFoods; //商品订单列表
       this.submitConfig.take_out = this.isTakeOut; //是否为外带
       this.submitConfig.note = this.orderNote; //订单备注
+      this.submitConfig.type = this.payType;//支付类型
       if(this.submitConfig.type === 8){
          this.submitConfig.bar_code = this.searchCode; //扫码条形码
       }
@@ -448,22 +452,21 @@ export default {
         this.disAmount += value.toString();
       }
     },
-    payMethodTap(type,value){ //切换支付方式
-      if(type === 'codeScanner'){
+    payMethodTap(value){ //切换支付方式
+      if(value == '8'){
         this.$refs['autofocus'].focus();
-      }else if(type === 'alipayFace'){
+      }else if(value == '1'){
         let alipay = this.userInfo.alipayEquipments;
         if(alipay[0]){
           this.deviceNum = alipay[0].value;
         }
-      }else if(type === 'weChatFace'){
+      }else if(value == '4'){
         let wechat = this.userInfo.wechatEquipments;
         if(wechat[0]){
           this.deviceNum = wechat[0].value;
         }
       }
-      this.payMethod = type;
-      this.submitConfig.type = value;
+      this.payType = value;
     },
     disAmountBtn(){ //点击优惠按钮
       if(!this.disAmount || (this.disAmount > this.payAmount)) return this.disAmount = '';
@@ -822,7 +825,10 @@ export default {
       this.webSocket.send(JSON.stringify({sn:`web${this.userInfo.id}`,type:4}));
     },
     webSocketClose(){  //webSocket断开重连
-      this.initSocket();
+      this.socketLimit++;
+      if(this.socketLimit < 10){
+        this.initSocket();
+      }
     },
     webSocketGetMessage(result){ //监听服务器回调信息
        let serverMsg = JSON.parse(result.data);
@@ -1457,7 +1463,6 @@ export default {
   overflow: hidden;
   display:flex;
   flex-direction: column;
-  min-width:890px;
 } 
 
 .mask_layer_content_top{
@@ -1525,6 +1530,7 @@ table{
   table-layout: fixed;
   border-collapse: separate;
   border-spacing:8px;
+  box-sizing:border-box;
 }
 
 td{

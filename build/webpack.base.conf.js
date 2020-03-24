@@ -9,7 +9,7 @@ function resolve (dir) {
 }
 
 
-
+debugger
 module.exports = {
   context: path.resolve(__dirname, '../'),
   entry: {
